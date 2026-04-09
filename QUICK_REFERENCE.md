@@ -1,3 +1,64 @@
+# Quick Reference
+
+## Install
+```bash
+pip install -e .
+```
+
+## Setup `.env`
+```env
+X_DATACORE_API_KEY=your-api-key-here
+```
+
+## Authentication
+```python
+from datacore import Datacore, AuthManager
+
+# API Key (từ .env)
+client = Datacore()
+
+# API Key (trực tiếp)
+client = Datacore(api_key="your-key")
+
+# Token (login)
+token = AuthManager.login("email@example.com", "password")
+client = Datacore(token=token)
+```
+
+## API Calls
+```python
+# Search
+response = client.get_data("dataset_code", limit=100)
+
+# Search với filter
+response = client.get_data(
+    dataset_code="vsic",
+    conditions=[{"field": "Level", "operator": "=", "value": "1"}],
+    select_fields=["Code", "Name"],
+    limit=100
+)
+
+# Preview
+response = client.preview("dataset_code")
+```
+
+## Error Handling
+```python
+try:
+    response = client.get_data("vsic")
+except ValueError as e:
+    print(f"Auth error: {e}")
+except Exception as e:
+    print(f"Request error: {e}")
+```
+
+## Env Variables
+
+| Variable | Mô tả |
+|----------|--------|
+| `X_DATACORE_API_KEY` | API key (bắt buộc) |
+| `DATACORE_BASE_URL` | Base URL (optional) |
+| `DATACORE_LOGIN_URL` | Login URL (optional) |
 # Quick Reference Card
 
 ## Installation

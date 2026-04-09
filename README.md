@@ -1,5 +1,107 @@
 # Datacore Python Client
 
+Simple Python client for calling Datacore API with built-in authentication management.
+
+## Features
+
+- API Key Authentication
+- Token Authentication (Login)
+- Automatic retries with exponential backoff
+- All URLs configurable via `.env`
+
+## Installation
+
+```bash
+pip install -e .
+```
+
+## Quick Start
+
+### 1. Setup `.env`
+
+```env
+# Required
+X_DATACORE_API_KEY=your-api-key-here
+
+# URLs (optional - có default)
+DATACORE_BASE_URL=https://gateway.datacore.vn/data/ds
+DATACORE_LOGIN_URL=https://gateway.datacore.vn/auth/login
+```
+
+### 2. Call API
+
+```python
+from datacore import Datacore
+
+# Tạo client (đọc API key từ .env)
+client = Datacore()
+
+# Gọi API search
+response = client.get_data("dataset_code", limit=10)
+print(response)
+
+# Preview dataset
+preview = client.preview("dataset_code")
+print(preview)
+```
+
+### 3. Authentication Options
+
+```python
+# Option A: API Key từ .env (recommended)
+client = Datacore()
+
+# Option B: API Key trực tiếp
+client = Datacore(api_key="your-api-key")
+
+# Option C: Login lấy token
+from datacore import AuthManager
+token = AuthManager.login("email@example.com", "password")
+client = Datacore(token=token)
+```
+
+## API Methods
+
+### `get_data(dataset_code, conditions, select_fields, page, limit)`
+Gọi search API, trả về response dict.
+
+```python
+response = client.get_data(
+    dataset_code="vsic",
+    conditions=[{"field": "Level", "operator": "=", "value": "1"}],
+    select_fields=["Code", "Name"],
+    page=1,
+    limit=100
+)
+```
+
+### `preview(dataset_code)`
+Lấy preview data của dataset.
+
+```python
+response = client.preview("vsic")
+```
+
+## Configuration (`.env`)
+
+```env
+# Authentication
+X_DATACORE_API_KEY=your-api-key-here
+
+# API URLs (có default, không bắt buộc)
+DATACORE_BASE_URL=https://gateway.datacore.vn/data/ds
+DATACORE_LOGIN_URL=https://gateway.datacore.vn/auth/login
+```
+
+## Troubleshooting
+
+| Issue | Solution |
+|-------|----------|
+| API Key not found | Check `X_DATACORE_API_KEY` trong `.env` |
+| Request timeout | Tăng timeout: `Datacore(timeout=60)` |
+| Auth error | Kiểm tra API key hợp lệ |
+# Datacore Python Client
+
 Simple Python client library for Datacore API - with two access tiers:
 - **DEMO Tier**: Browse datasets without authentication
 - **Full Tier**: Unlimited access with API key or token

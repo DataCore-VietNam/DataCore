@@ -267,21 +267,28 @@ class Datacore:
             raise ValueError(f"Cannot convert to DataFrame: {e}")
     
     @retry_on_error(max_retries=3, delay=1.0)
-    def preview(self, dataset_code: str) -> Dict[str, Any]:
+    def preview(self, dataset_code: str) -> pd.DataFrame:
         """
-        Get dataset preview (no authentication required)
+        Get dataset preview as DataFrame (no authentication required)
         
         Example:
             client = Datacore()
-            preview = client.preview("vsic")
-            print(preview)
+            df = client.preview("vsic")
+            print(df)
         """
         params = {"dataSetCode": dataset_code}
         
         response = requests.get(self.PREVIEW_URL, params=params, timeout=self.timeout)
         response.raise_for_status()
         
-        return response.json()
+        data = response.json()
+        try:
+            return pd.DataFrame(
+                data["data"]["dataDetail"],
+                columns=data["data"]["fields"]
+            )
+        except (KeyError, ValueError) as e:
+            raise ValueError(f"Cannot convert preview to DataFrame: {e}")
     
     def paginate(
         self,

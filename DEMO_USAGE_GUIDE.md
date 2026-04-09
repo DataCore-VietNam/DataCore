@@ -1,3 +1,97 @@
+# Demo Usage Guide
+
+## Bắt đầu nhanh
+
+### 1. Cài đặt
+
+```bash
+cd package_datacore
+pip install -e .
+```
+
+### 2. Tạo file `.env`
+
+```env
+X_DATACORE_API_KEY=your-api-key-here
+```
+
+### 3. Gọi API
+
+```python
+from datacore import Datacore
+
+client = Datacore()
+
+# Preview
+response = client.preview("vsic")
+print(response)
+
+# Search
+response = client.get_data("vsic", limit=10)
+print(response)
+```
+
+---
+
+## Ví dụ chi tiết
+
+### Search với filter
+
+```python
+from datacore import Datacore
+
+client = Datacore()
+
+response = client.get_data(
+    dataset_code="vsic",
+    conditions=[
+        {"field": "Level", "operator": "=", "value": "1"}
+    ],
+    select_fields=["Code", "Name"],
+    page=1,
+    limit=50
+)
+print(response)
+```
+
+### Search với pagination
+
+```python
+# Page 1
+response_p1 = client.get_data("vsic", page=1, limit=100)
+
+# Page 2
+response_p2 = client.get_data("vsic", page=2, limit=100)
+```
+
+### Login Authentication
+
+```python
+from datacore import AuthManager, Datacore
+
+token = AuthManager.login("email@example.com", "password")
+client = Datacore(token=token)
+
+response = client.get_data("vsic", limit=10)
+print(response)
+```
+
+---
+
+## Configuration
+
+Tất cả config trong `.env`:
+
+```env
+# Authentication
+X_DATACORE_API_KEY=your-api-key-here
+
+# API URLs (optional)
+DATACORE_BASE_URL=https://gateway.datacore.vn/data/ds
+DATACORE_LOGIN_URL=https://gateway.datacore.vn/auth/login
+```
+
+> **Security**: Không commit `.env` vào git.
 # Datacore Python Client - Usage Guide
 
 ## Quick Start

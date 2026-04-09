@@ -1,3 +1,57 @@
+# Extension Guide
+
+Hướng dẫn thêm API endpoint mới vào client.
+
+## Thêm method mới
+
+Thêm vào class `Datacore` trong `datacore/client.py`:
+
+```python
+@retry_on_error(max_retries=3, delay=1.0)
+def your_new_method(self, param1: str, **kwargs) -> Dict[str, Any]:
+    """Gọi endpoint mới"""
+    url = f"{self.BASE_URL}/your-endpoint"
+    payload = {"param1": param1, **kwargs}
+    
+    response = self.session.post(url, json=payload, timeout=self.timeout)
+    response.raise_for_status()
+    
+    return response.json()
+```
+
+## Thêm URL mới vào `.env`
+
+Nếu endpoint có base URL khác:
+
+```env
+DATACORE_NEW_ENDPOINT_URL=https://gateway.datacore.vn/new/endpoint
+```
+
+Đọc trong code:
+```python
+NEW_URL = _env.get("DATACORE_NEW_ENDPOINT_URL", "https://gateway.datacore.vn/new/endpoint")
+```
+
+## Ví dụ: Thêm endpoint export
+
+```python
+@retry_on_error(max_retries=3, delay=1.0)
+def export(self, dataset_code: str, format: str = "json") -> Dict[str, Any]:
+    """Export dataset"""
+    url = f"{self.BASE_URL}/export"
+    params = {"dataSetCode": dataset_code, "format": format}
+    
+    response = self.session.get(url, params=params, timeout=self.timeout)
+    response.raise_for_status()
+    
+    return response.json()
+```
+
+Sử dụng:
+```python
+client = Datacore()
+response = client.export("vsic", format="json")
+```
 # 📚 EXTENSION GUIDE - How to Add New Datasets
 
 Cấu trúc của library đã được thiết kế để dễ dàng mở rộng. Đây là hướng dẫn để add dataset mới.

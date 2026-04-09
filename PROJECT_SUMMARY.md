@@ -1,3 +1,46 @@
+# Project Summary
+
+## Datacore Python Client
+
+Python package để gọi Datacore API với authentication tự động.
+
+## Cấu trúc
+
+```
+package_datacore/
+├── datacore/
+│   ├── __init__.py          # Export: Datacore, AuthManager
+│   └── client.py            # Client chính
+├── .env                     # API key & URLs (git-ignored)
+├── setup.py                 # Package config
+├── pyproject.toml           # Project metadata
+├── requirements.txt         # Dependencies
+└── README.md                # Quick start
+```
+
+## Public API
+
+```python
+from datacore import Datacore, AuthManager
+
+# Tạo client
+client = Datacore()                          # API key từ .env
+client = Datacore(api_key="key")             # API key trực tiếp
+client = Datacore(token=token)               # Token từ login
+
+# Gọi API
+response = client.get_data("dataset_code", limit=10)
+response = client.preview("dataset_code")
+
+# Login
+token = AuthManager.login("email", "password")
+```
+
+## Dependencies
+
+- `requests` - HTTP client
+- `pandas` - DataFrame support
+- `python-dotenv` - Đọc `.env` file
 # 📦 Datacore Python Client - Project Summary
 
 ## ✨ What's Been Created
@@ -114,7 +157,7 @@ import requests
 import pandas as pd
 
 your_key = os.getenv("X_API_KEY")
-url = "https://gateway.datacore.vn/data/ds/search"
+url = ""
 headers = {"x-api-key": your_key, "Content-Type": "application/json"}
 payload = {
     "dataSetCode": "dataset_historical_price",

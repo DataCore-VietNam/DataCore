@@ -1,3 +1,78 @@
+# Authentication Guide
+
+## Hai phương thức xác thực
+
+### 1. API Key
+
+Dành cho: server-to-server, scripts, automation.
+
+```python
+from datacore import Datacore
+
+# Đọc từ .env
+client = Datacore()
+
+# Hoặc truyền trực tiếp
+client = Datacore(api_key="your-api-key")
+```
+
+Setup `.env`:
+```env
+X_DATACORE_API_KEY=your-api-key-here
+```
+
+Lấy API key: liên hệ support@datacore.vn
+
+### 2. Token (Login)
+
+Dành cho: user-based access, web apps.
+
+```python
+from datacore import AuthManager, Datacore
+
+# Login lấy token
+token = AuthManager.login("email@example.com", "password")
+
+# Tạo client
+client = Datacore(token=token)
+```
+
+Token có thể hết hạn. Khi hết hạn, login lại để lấy token mới.
+
+---
+
+## Thứ tự ưu tiên
+
+```
+Datacore(api_key="A", token="B")
+│
+├─ 1. token parameter (nếu có)
+├─ 2. api_key parameter (nếu không có token)
+└─ 3. X_DATACORE_API_KEY trong .env (nếu không truyền gì)
+```
+
+## So sánh
+
+| | API Key | Token |
+|---|---|---|
+| Best for | Services/Scripts | Web Apps/Users |
+| Hết hạn | Không | Có |
+| Setup | Lưu trong `.env` | Login mỗi lần |
+
+## FAQ
+
+**Q: Chưa có credentials?**
+A: Liên hệ support@datacore.vn để lấy API key, hoặc đăng ký tài khoản trên portal.
+
+**Q: Dùng cả 2 cùng lúc được không?**
+A: Không, nhưng có thể tạo nhiều client instances:
+```python
+client1 = Datacore(api_key="key")
+client2 = Datacore(token=token)
+```
+
+**Q: Lưu token ở đâu?**
+A: Không hardcode. Lưu trong environment variables hoặc file config (git-ignored).
 """
 DATACORE CLIENT AUTHENTICATION GUIDE
 =====================================
