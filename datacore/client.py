@@ -25,7 +25,7 @@ _env = dotenv_values()
 class AuthManager:
     """Manages authentication - API key or Login/Token"""
     
-    LOGIN_URL = _env.get("DATACORE_LOGIN_URL")
+    LOGIN_URL = _env.get("DATACORE_AUTH_LOGIN")
     
     def __init__(self):
         self.api_key: Optional[str] = None
@@ -138,6 +138,10 @@ class Datacore:
     Backend handles permissions and data filtering.
     Client handles auth and request formatting.
     
+    Example - Preview (no auth):
+        client = Datacore()
+        response = client.preview("vsic")
+    
     Example - API Key:
         client = Datacore(api_key="your-api-key")
         response = client.get_data("dataset_code", limit=10)
@@ -146,14 +150,11 @@ class Datacore:
         token = AuthManager.login("user@example.com", "password")
         client = Datacore(token=token)
         response = client.get_data("dataset_code", limit=10)
-    
-    Example - From Environment:
-        # Set X_DATACORE_API_KEY
-        client = Datacore()
-        response = client.get_data("dataset_code", limit=10)
     """
     
-    BASE_URL = _env.get("DATACORE_BASE_URL")
+    BASE_URL = _env.get("DATACORE_GATEWAY_URL")
+    PREVIEW_URL = _env.get("DATACORE_PREVIEW")
+    SEARCH_URL = _env.get("DATACORE_SEARCH")
     
     def __init__(
         self,
@@ -169,9 +170,12 @@ class Datacore:
             token: Access token from login
             timeout: Request timeout in seconds
         
+        If no credentials provided, client works in demo mode (preview only).
         Authentication priority: token > api_key > X_DATACORE_API_KEY in .env
         """
         self.auth = AuthManager()
+        self.timeout = timeout
+        self.session = requests.Session()
         
         # Try authentication methods in order
         if token:
@@ -179,17 +183,21 @@ class Datacore:
         elif api_key:
             self.auth.authenticate_with_api_key(api_key)
         else:
-            self.auth.authenticate_with_api_key()  # Tries env variable
+            try:
+                self.auth.authenticate_with_api_key()  # Tries .env
+            except ValueError:
+                pass  # No auth - demo mode (preview only)
         
+        if self.auth.is_authenticated():
+            self.session.headers.update(self.auth.get_headers())
+    
+    def _require_auth(self):
+        """Raise error if not authenticated"""
         if not self.auth.is_authenticated():
             raise ValueError(
-                "Authentication failed. Provide token, api_key, or "
-                "set X_DATACORE_API_KEY environment variable."
+                "Authentication required. Provide api_key or token. "
+                "Without auth, only preview() is available."
             )
-        
-        self.timeout = timeout
-        self.session = requests.Session()
-        self.session.headers.update(self.auth.get_headers())
     
     @retry_on_error(max_retries=3, delay=1.0)
     def get_data(
@@ -202,7 +210,7 @@ class Datacore:
         **kwargs
     ) -> Dict[str, Any]:
         """
-        Get data from a dataset
+        Get data from a dataset (requires authentication)
         
         Args:
             dataset_code: Dataset code (e.g., "dataset_historical_price")
@@ -215,6 +223,7 @@ class Datacore:
         Returns:
             Response from API
         """
+        self._require_auth()
         payload = {
             "dataSetCode": dataset_code,
             "conditions": conditions or [],
@@ -224,7 +233,7 @@ class Datacore:
             **kwargs
         }
         
-        url = f"{self.BASE_URL}/search"
+        url = self.SEARCH_URL
         response = self.session.post(url, json=payload, timeout=self.timeout)
         response.raise_for_status()
         
@@ -260,16 +269,16 @@ class Datacore:
     @retry_on_error(max_retries=3, delay=1.0)
     def preview(self, dataset_code: str) -> Dict[str, Any]:
         """
-        Get dataset preview
+        Get dataset preview (no authentication required)
         
         Example:
+            client = Datacore()
             preview = client.preview("vsic")
             print(preview)
         """
-        url = f"{self.BASE_URL}/preview"
         params = {"dataSetCode": dataset_code}
         
-        response = self.session.get(url, params=params, timeout=self.timeout)
+        response = requests.get(self.PREVIEW_URL, params=params, timeout=self.timeout)
         response.raise_for_status()
         
         return response.json()
