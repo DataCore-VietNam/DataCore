@@ -79,6 +79,98 @@ client = Datacore(api_key="your-api-key-here")
 
 ---
 
+## Authentication Methods
+
+The Datacore client supports **two authentication methods**:
+
+### Method 1: API Key Authentication (Recommended for Services)
+
+Best for: Server applications, microservices, automated scripts
+
+```python
+from datacore import Datacore
+
+# Option A: From environment variable (recommended)
+client = Datacore()
+
+# Option B: Direct parameter
+client = Datacore(api_key="your-api-key-here")
+```
+
+**Advantages:**
+- ✓ No need for user account
+- ✓ Long-lived credentials
+- ✓ Suitable for service-to-service communication
+- ✓ Easy integration
+
+### Method 2: Token Authentication via Login (For User Accounts)
+
+Best for: Web applications, user-based access, personal accounts
+
+```python
+from datacore import AuthManager, Datacore
+
+# Step 1: Login with credentials to get access token
+token = AuthManager.login(
+    username="user@example.com",
+    password="password123"
+)
+
+# Step 2: Create client with token
+client = Datacore(token=token)
+```
+
+**Advantages:**
+- ✓ Per-user authentication
+- ✓ Temporary tokens (more secure)
+- ✓ User account-based access control
+- ✓ Activity tracking per user
+
+**Note:** Requires an existing Datacore account
+
+---
+
+## Getting Started Without Credentials
+
+Don't have login credentials yet? No problem! Here are your options:
+
+### Option 1: Request an API Key
+
+**For Service/Application Access:**
+- Contact: support@datacore.vn
+- Include in request:
+  - Your company/organization name
+  - Intended use case
+  - Estimated data volume needs
+- Receive: Long-lived API key for programmatic access
+
+### Option 2: Create a User Account
+
+**For Personal/Test Access:**
+1. Visit the Datacore portal (if available)
+2. Sign up with your email
+3. Verify your email address
+4. Use credentials with `AuthManager.login()`
+
+### Option 3: Test with Demo Key
+
+If available, test with the demo API key:
+
+```python
+from datacore import Datacore
+
+# Using demo key (if X_DATACORE_API_KEY is set)
+client = Datacore()
+df = client.get_historical_price(limit=10)
+```
+
+**Current Status:**
+- API Key support: ✓ Available
+- Token/Login support: ✓ Available (for users with accounts)
+- Try both to see which works for your use case
+
+---
+
 ## Basic Usage
 
 ### Get Historical Price Data
