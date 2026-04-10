@@ -1,3 +1,113 @@
+# Usage Guide - Datacore Python Client
+
+## Installation
+
+```bash
+cd package_datacore
+pip install -e .
+```
+
+## Setup Authentication
+
+### Tạo file `.env`
+
+```env
+# API Key (bắt buộc)
+X_DATACORE_API_KEY=your-api-key-here
+
+# URLs (optional)
+DATACORE_BASE_URL=https://gateway.datacore.vn/data/ds
+DATACORE_LOGIN_URL=https://gateway.datacore.vn/auth/login
+```
+
+> **Security**: Thêm `.env` vào `.gitignore`, không commit credentials.
+
+---
+
+## Authentication
+
+### Method 1: API Key (Recommended)
+
+API key được đọc từ file `.env`.
+
+```python
+from datacore import Datacore
+
+# Đọc API key từ .env
+client = Datacore()
+
+# Hoặc truyền trực tiếp
+client = Datacore(api_key="your-api-key")
+```
+
+### Method 2: Token (Login)
+
+```python
+from datacore import AuthManager, Datacore
+
+# Login lấy token
+token = AuthManager.login("email@example.com", "password")
+
+# Tạo client với token
+client = Datacore(token=token)
+```
+
+**Thứ tự ưu tiên**: token > api_key parameter > `X_DATACORE_API_KEY` trong `.env`
+
+---
+
+## Gọi API
+
+### Search Data
+
+```python
+response = client.get_data(
+    dataset_code="vsic",
+    conditions=[
+        {"field": "Level", "operator": "=", "value": "1"}
+    ],
+    select_fields=["Code", "Name"],
+    page=1,
+    limit=100
+)
+print(response)
+```
+
+### Preview Dataset
+
+```python
+response = client.preview("vsic")
+print(response)
+```
+
+---
+
+## Error Handling
+
+```python
+from datacore import Datacore
+import requests
+
+try:
+    client = Datacore()
+    response = client.get_data("vsic", limit=10)
+except ValueError as e:
+    print(f"Auth error: {e}")
+except requests.RequestException as e:
+    print(f"Network error: {e}")
+```
+
+Client tự động retry 3 lần với exponential backoff khi gặp lỗi network.
+
+---
+
+## Environment Variables
+
+| Variable | Mô tả | Bắt buộc |
+|----------|--------|----------|
+| `X_DATACORE_API_KEY` | API key xác thực | Có (nếu không dùng token) |
+| `DATACORE_BASE_URL` | Base URL cho data API | Không (có default) |
+| `DATACORE_LOGIN_URL` | URL endpoint login | Không (có default) |
 # USAGE GUIDE - Datacore Python Client
 
 ## Introduction
