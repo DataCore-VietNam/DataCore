@@ -24,12 +24,12 @@ def your_new_method(self, param1: str, **kwargs) -> Dict[str, Any]:
 Nếu endpoint có base URL khác:
 
 ```env
-DATACORE_NEW_ENDPOINT_URL=https://gateway.datacore.vn/new/endpoint
+DATACORE_NEW_ENDPOINT_URL
 ```
 
 Đọc trong code:
 ```python
-NEW_URL = _env.get("DATACORE_NEW_ENDPOINT_URL", "https://gateway.datacore.vn/new/endpoint")
+NEW_URL = _env.get("DATACORE_NEW_ENDPOINT_URL")
 ```
 
 ## Ví dụ: Thêm endpoint export

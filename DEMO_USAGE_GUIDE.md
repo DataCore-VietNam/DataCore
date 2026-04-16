@@ -82,14 +82,6 @@ print(response)
 
 Tất cả config trong `.env`:
 
-```env
-# Authentication
-X_DATACORE_API_KEY=your-api-key-here
-
-# API URLs (optional)
-DATACORE_BASE_URL=https://gateway.datacore.vn/data/ds
-DATACORE_LOGIN_URL=https://gateway.datacore.vn/auth/login
-```
 
 > **Security**: Không commit `.env` vào git.
 # Datacore Python Client - Usage Guide
