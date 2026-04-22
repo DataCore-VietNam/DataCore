@@ -1,351 +1,144 @@
-# Datacore Python Client
+﻿# Datacore Python Client
 
-Simple Python client for calling Datacore API with built-in authentication management.
+Python client library cho Datacore API — hỗ trợ hai chế độ:
+- **Demo**: Xem trước dataset không cần API key
+- **Paid**: Truy cập đầy đủ với API key
 
-## Features
-
-- API Key Authentication
-- Token Authentication (Login)
-- Automatic retries with exponential backoff
-- All URLs configurable via `.env`
-
-## Installation
+## Cài đặt
 
 ```bash
 pip install -e .
 ```
 
-## Quick Start
-
-### 1. Setup `.env`
+## Cấu hình `.env` (tuỳ chọn)
 
 ```env
-# Required
-X_DATACORE_API_KEY=your-api-key-here
-
-# URLs (optional - có default)
-DATACORE_BASE_URL=https://gateway.datacore.vn/data/ds
-DATACORE_LOGIN_URL=https://gateway.datacore.vn/auth/login
+X_API_KEY=your-api-key-here
+DATACORE_GATEWAY_URL=https://gateway.datacore.vn
 ```
 
-### 2. Call API
+---
+
+## Sử dụng
+
+### 1. Khởi tạo client
 
 ```python
 from datacore import Datacore
 
-# Tạo client (đọc API key từ .env)
+# Demo mode (không cần API key)
 client = Datacore()
 
-# Gọi API search
-response = client.get_data("dataset_code", limit=10)
-print(response)
-
-# Preview dataset
-preview = client.preview("dataset_code")
-print(preview)
-```
-
-### 3. Authentication Options
-
-```python
-# Option A: API Key từ .env (recommended)
-client = Datacore()
-
-# Option B: API Key trực tiếp
+# Paid mode
 client = Datacore(api_key="your-api-key")
-
-# Option C: Login lấy token
-from datacore import AuthManager
-token = AuthManager.login("email@example.com", "password")
-client = Datacore(token=token)
 ```
 
-## API Methods
+---
 
-### `get_data(dataset_code, conditions, select_fields, page, limit)`
-Gọi search API, trả về response dict.
+### 2. Preview dataset (Demo mode)
+
+Xem trước data mà không cần API key.
 
 ```python
-response = client.get_data(
-    dataset_code="vsic",
-    conditions=[{"field": "Level", "operator": "=", "value": "1"}],
-    select_fields=["Code", "Name"],
+# Lấy toàn bộ cột
+df = client.preview("dataset_historical_price")
+print(df.head())
+
+# Lọc cột cần xem
+df = client.preview("dataset_historical_price", columns=["symbol", "date", "close_price"])
+print(df.head())
+```
+
+---
+
+### 3. Lấy data (Paid mode)
+
+```python
+# Lấy toàn bộ cột — trả về {"data": DataFrame, "info": str}
+result = client.get_data("dataset_historical_price")
+print(result["data"].head())
+print(result["info"])
+# num: 3760607, totalPage: 37607, currentPage: 1, queried_rows: 100
+
+# Lọc cột
+result = client.get_data("dataset_historical_price", columns=["symbol", "date", "close_price"])
+print(result["data"].head())
+print(result["info"])
+```
+
+Tham số đầy đủ:
+
+```python
+result = client.get_data(
+    dataset_code="dataset_historical_price",
+    columns=["symbol", "date", "close_price"],  # lọc cột (tuỳ chọn)
+    conditions=[{"field": "symbol", "operator": "=", "value": "AAA"}],  # lọc dữ liệu (tuỳ chọn)
+    select_fields=[],        # chọn fields từ API (tuỳ chọn)
     page=1,
-    limit=100
+    limit=100,
+    return_type="dataframe", # "dataframe" | "json" | "dict"
+    include_info=True,       # True: trả về {"data": ..., "info": ...} | False: trả về data trực tiếp
 )
 ```
 
-### `preview(dataset_code)`
-Lấy preview data của dataset.
+---
+
+### 4. Lấy thông tin dataset
 
 ```python
-response = client.preview("vsic")
-```
-
-## Configuration (`.env`)
-
-```env
-# Authentication
-X_DATACORE_API_KEY=your-api-key-here
-
-# API URLs (có default, không bắt buộc)
-DATACORE_BASE_URL=https://gateway.datacore.vn/data/ds
-DATACORE_LOGIN_URL=https://gateway.datacore.vn/auth/login
-```
-
-## Troubleshooting
-
-| Issue | Solution |
-|-------|----------|
-| API Key not found | Check `X_DATACORE_API_KEY` trong `.env` |
-| Request timeout | Tăng timeout: `Datacore(timeout=60)` |
-| Auth error | Kiểm tra API key hợp lệ |
-# Datacore Python Client
-
-Simple Python client library for Datacore API - with two access tiers:
-- **DEMO Tier**: Browse datasets without authentication
-- **Full Tier**: Unlimited access with API key or token
-
-## Features
-
-✅ **DEMO Mode** - Preview datasets without creating an account  
-✅ **API Key Authentication** - For server-to-server access  
-✅ **Token Authentication** - For user account access  
-✅ **Pandas Support** - Get data as DataFrames  
-✅ **Automatic Retries** - Exponential backoff for network resilience  
-✅ **Pagination** - Handle large datasets efficiently  
-
-## Installation
-
-```bash
-pip install -e .
-```
-
-## Quick Start - Three Ways
-
-### 1️⃣ DEMO Mode (No Login Needed)
-
-```python
-from datacore import Datacore
-
-# No credentials required!
-client = Datacore()
-
-# Preview any dataset
-preview = client.preview("vsic")
-print(preview)
-
-# List all datasets
-datasets = client.list_datasets()
-print(datasets)
-```
-
-### 2️⃣ With API Key
-
-```python
-from datacore import Datacore
-
-# Using API key from environment
-client = Datacore()
-
-# Or pass directly
-client = Datacore(api_key="your-key-here")
-
-# Search data
-data = client.search("vsic", limit=100)
-```
-
-### 3️⃣ With Login Token
-
-```python
-from datacore import AuthManager, Datacore
-
-# Login
-token = AuthManager.login("email@example.com", "password")
-
-# Create authenticated client
-client = Datacore(token=token)
-
-# Search data
-data = client.search("vsic", limit=100)
+info = client.get_data_info("dataset_historical_price")
+print(info)
+# num: 3760607, totalPage: 37607, currentPage: 1, queried_rows: 100
 ```
 
 ---
 
-## API Reference
+### 5. Download data về file
 
-### DEMO Methods (No Authentication Required)
-
-#### `preview(dataset_code: str) -> Dict`
-Get sample records from a dataset.
 ```python
-client = Datacore()
-preview = client.preview("vsic")
-# Returns: {"status": true, "data": {"fields": [...], "dataDetail": [...]}}
-```
+# Download tất cả các trang
+download_result = client.download_data(
+    dataset_code="dataset_historical_price",
+    output_path="data.csv",
+    file_format="csv",   # "csv" hoặc "json"
+    start_page=1,
+    end_page=None,       # None = tải hết tất cả trang
+    limit=1000,
+    show_progress=True,
+)
+print(download_result)
+# {"output_path": "data.csv", "pages_downloaded": 37607, "rows_downloaded": 3760607, ...}
 
-#### `list_datasets() -> Dict`
-List all public datasets.
-```python
-datasets = client.list_datasets()
-```
-
-#### `get_dataset_info(dataset_code: str) -> Dict`
-Get metadata about a dataset.
-```python
-info = client.get_dataset_info("vsic")
-```
-
----
-
-### Authenticated Methods (Requires API Key or Token)
-
-#### `search(dataset_code, conditions=None, select_fields=None, page=1, limit=10) -> Dict`
-Search data in the dataset.
-```python
-data = client.search(
-    dataset_code="vsic",
-    conditions=[{"field": "Level", "operator": "=", "value": "1"}],
-    select_fields=["Code", "Name"],
-    limit=100
+# Download chỉ 3 trang đầu
+download_result = client.download_data(
+    dataset_code="dataset_historical_price",
+    output_path="data_page1_3.csv",
+    file_format="csv",
+    start_page=1,
+    end_page=3,
+    limit=1000,
+    show_progress=True,
 )
 ```
 
-#### `get_dataframe(dataset_code, ...) -> pd.DataFrame`
-Get search results as pandas DataFrame.
-```python
-df = client.get_dataframe("vsic", limit=100)
-df.to_csv("data.csv")
-```
+---
 
-#### `paginate(dataset_code, max_pages=None, limit=100) -> Generator`
-Generator for paginated results.
-```python
-for df in client.paginate("vsic", limit=1000, max_pages=10):
-    process_data(df)
-```
+## Tổng hợp các phương thức
 
-#### `fetch_all(dataset_code, max_records=None, limit=100) -> pd.DataFrame`
-Fetch all data at once.
-```python
-df = client.fetch_all("vsic", max_records=50000)
-```
+| Phương thức | Mô tả | Cần API key |
+|---|---|---|
+| `preview(dataset_code, columns)` | Xem trước data | Không |
+| `get_data(dataset_code, columns, ...)` | Lấy data (trả về `{"data", "info"}`) | Có |
+| `get_data_info(dataset_code, ...)` | Lấy thông tin tổng quan dataset | Có |
+| `download_data(dataset_code, output_path, ...)` | Tải data về file CSV/JSON | Có |
 
 ---
 
-## Configuration
+## Xử lý lỗi
 
-Create `.env` file in your project:
-
-```env
-# For authenticated access (optional)
-X_DATACORE_API_KEY=your-api-key-here
-
-# For login authentication (optional)
-DATACORE_USERNAME=your-email@example.com
-DATACORE_PASSWORD=your-password
-
-# API Settings (usually no changes needed)
-
-API_TIMEOUT=30
-API_MAX_RETRIES=3
-```
-
-**Security**: Add `.env` to `.gitignore` - never commit credentials!
-
----
-
-## Examples
-
-### Example 1: Explore Datasets (DEMO Tier)
-
-```python
-from datacore import Datacore
-
-client = Datacore()
-
-# What datasets are available?
-datasets = client.list_datasets()
-print(f"Available: {len(datasets['data'])} datasets")
-
-# Preview VSIC industry codes
-preview = client.preview("vsic")
-fields = preview['data']['fields']
-records = preview['data']['dataDetail']
-print(f"VSIC: {len(records)} sample records with {len(fields)} fields")
-```
-
-### Example 2: Search & Analyze (Full Tier)
-
-```python
-from datacore import Datacore
-import pandas as pd
-
-client = Datacore(api_key="your-key")
-
-# Get data as DataFrame
-df = client.get_dataframe("vsic", limit=1000)
-
-# Analyze
-print(df.groupby("Level").size())
-df.to_csv("vsic_analysis.csv")
-```
-
-### Example 3: Batch Processing
-
-```python
-from datacore import Datacore
-
-client = Datacore(api_key="your-key")
-
-# Process in chunks
-total = 0
-for df in client.paginate("vsic", limit=5000):
-    total += len(df)
-    process_batch(df)
-print(f"Total records: {total}")
-```
-
----
-
-## Documentation
-
-- **[DEMO_USAGE_GUIDE.md](DEMO_USAGE_GUIDE.md)** - Comprehensive guide with all features
-- **[ENV_SETUP.md](ENV_SETUP.md)** - Configuration and security best practices
-- **[EXTENSION_GUIDE.md](EXTENSION_GUIDE.md)** - How to add new datasets/methods
-
----
-
-## Two Access Tiers Explained
-
-| Feature | DEMO Mode | Full Tier |
-|---------|-----------|-----------|
-| No login required | ✅ | ❌ |
-| Preview datasets | ✅ | ✅ |
-| Search/filter | ❌ | ✅ |
-| Export data | ❌ | ✅ |
-| Pagination | ❌ | ✅ |
-| API key required | ❌ | ✅ |
-| Best for | Exploration | Analysis |
-
----
-
-## Troubleshooting
-
-**Q: How do I get started without credentials?**  
-A: Use DEMO mode! Call `client.preview()` with no setup.
-
-**Q: I get "UnAuthorizedException"**  
-A: Your API key is invalid. Check `.env` or use DEMO mode first.
-
-**Q: My request times out**  
-A: Try increasing timeout: `Datacore(timeout=60)`
-
----
-
-## Support
-
-- 📧 Email: support@datacore.vn
-- 📊 [Datacore Portal](https://datacore.vn)
-- 📖 See [DEMO_USAGE_GUIDE.md](DEMO_USAGE_GUIDE.md) for full documentation
-
+| Lỗi | Nguyên nhân | Cách xử lý |
+|---|---|---|
+| `AuthenticationError` | Thiếu hoặc sai API key | Truyền `api_key=` hoặc set `X_API_KEY` trong `.env` |
+| `PermissionDeniedError` | Không có quyền truy cập dataset | Kiểm tra gói dịch vụ |
+| `APIRequestError` | Lỗi từ server hoặc sai format | Kiểm tra `dataset_code`, `conditions` |
+| `ValueError` | Tên cột không tồn tại | Xem danh sách cột trong thông báo lỗi |
