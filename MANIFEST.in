@@ -1,0 +1,5 @@
+include README.md
+include LICENSE
+recursive-include datacore *.py
+recursive-include datacore *.typed
+recursive-include datacore *.json *.yaml *.yml *.txt

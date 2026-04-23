@@ -229,8 +229,8 @@ class Datacore:
     @retry_on_error(max_retries=3, delay=1.0)
     def preview_raw(self, dataset_code: str) -> Dict[str, Any]:
         """
-        Demo mode, no API key required.
-        Need DATACORE_PREVIEW in .env
+        Demo mode — no API key required.
+        Requires DATACORE_PREVIEW to be set in .env.
         """
         if not self.PREVIEW_URL:
             raise APIRequestError("DATACORE_PREVIEW is not configured in .env")
@@ -305,15 +305,15 @@ class Datacore:
     ):
         """
         return_type:
-        - "dataframe": tra pandas DataFrame (mac dinh)
-        - "json": tra JSON string
-        - "dict": tra raw response dict
+        - "dataframe": returns a pandas DataFrame (default)
+        - "json": returns a JSON string
+        - "dict": returns the raw response dict
 
         include_info:
-        - True: tra ve dict {"data": result, "info": info_string} (mac dinh)
-        - False: tra ve ket qua theo return_type
+        - True: returns dict {"data": result, "info": info_string} (default)
+        - False: returns the result directly according to return_type
 
-        columns: loc cac cot can lay (chi ap dung khi return_type="dataframe")
+        columns: filter specific columns (only applies when return_type="dataframe")
         """
         raw_data = self._request_data(
             dataset_code=dataset_code,
@@ -384,11 +384,11 @@ class Datacore:
         **kwargs: Any,
     ) -> Dict[str, Any]:
         """
-        Download data using authenticated requests (same x-api-key from client session).
+        Download data to a file using the authenticated session.
 
         file_format:
-        - "csv": save concatenated dataframe to CSV
-        - "json": save list of raw API page responses
+        - "csv": saves a concatenated DataFrame to a CSV file
+        - "json": saves a list of raw API page responses as JSON
         """
         normalized_format = file_format.lower().strip()
         if normalized_format not in {"csv", "json"}:
@@ -480,7 +480,8 @@ class Datacore:
         **kwargs: Any,
     ) -> Iterator[pd.DataFrame]:
         """
-        Paid API pagination.
+        Iterates over all pages of a dataset, yielding one DataFrame per page.
+        Requires API key.
         """
         page = 1
         while True:
