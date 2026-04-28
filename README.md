@@ -81,28 +81,10 @@ result = client.get_data(
 )
 ```
 
----
-
-### 4. Get dataset info
-
-```python
-info = client.get_data_info("dataset_historical_price")
-print(info)
-# num: 3760607, totalPage: 37607, currentPage: 1, queried_rows: 100
-```
 
 ---
 
-### 5. List all datasets (Paid mode)
-
-```python
-df = client.list_datasets()
-print(df)
-```
-
----
-
-### 6. Download data to file
+### 5. Download data to file
 
 ```python
 # Download all pages
@@ -139,7 +121,7 @@ download_result = client.download_data(
 | `preview(dataset_code, columns)` | Preview dataset | No |
 | `get_data(dataset_code, columns, ...)` | Fetch data, returns `{"data", "info"}` | Yes |
 | `get_data_info(dataset_code, ...)` | Get dataset summary info | Yes |
-| `list_datasets()` | List all available datasets | Yes |
+
 | `download_data(dataset_code, output_path, ...)` | Download data to CSV/JSON file | Yes |
 
 ---

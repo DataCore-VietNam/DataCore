@@ -65,9 +65,9 @@ class Datacore:
         info = client.get_data_info("dataset_historical_price")
     """
 
-    GATEWAY_URL = _env.get("DATACORE_GATEWAY_URL", "https://gateway.datacore.vn")
-    SEARCH_URL = _env.get("DATACORE_SEARCH", f"{GATEWAY_URL}/data/ds/search")
-    PREVIEW_URL = _env.get("DATACORE_PREVIEW", "").strip()
+    GATEWAY_URL =  "https://gateway.datacore.vn"
+    SEARCH_URL = "https://gateway.datacore.vn/data/ds/search"
+    PREVIEW_URL = "https://gateway.datacore.vn/data/ds/preview"
 
     def __init__(self, api_key: Optional[str] = None, timeout: int = 30):
         self.timeout = timeout

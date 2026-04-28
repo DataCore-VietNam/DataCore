@@ -55,3 +55,4 @@ htmlcov/
 
 # Data files
 dataset_*.csv
+dataset_*.json
