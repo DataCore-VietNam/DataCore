@@ -493,7 +493,6 @@ class Datacore:
                 conditions=conditions,
                 select_fields=select_fields,
                 page=page,
-                limit=limit,
                 **kwargs,
             )
 
