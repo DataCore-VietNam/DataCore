@@ -84,7 +84,7 @@ result = client.get_data(
 
 ---
 
-### 5. Download data to file
+### 4. Download data to file
 
 ```python
 # Download all pages
@@ -94,7 +94,6 @@ download_result = client.download_data(
     file_format="csv",   # "csv" or "json"
     start_page=1,
     end_page=None,       # None = download all pages
-    limit=1000,
     show_progress=True,
 )
 print(download_result)
@@ -107,7 +106,6 @@ download_result = client.download_data(
     file_format="csv",
     start_page=1,
     end_page=3,
-    limit=1000,
     show_progress=True,
 )
 ```
