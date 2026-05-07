@@ -7,7 +7,7 @@ Python client library for the Datacore API — supports two access modes:
 ## Installation
 
 ```bash
-pip install -e .
+!pip install -e .
 ```
 
 ## Configuration (`.env`, optional)
@@ -132,3 +132,4 @@ download_result = client.download_data(
 | `PermissionDeniedError` | No access to dataset | Check your subscription plan |
 | `APIRequestError` | Server error or invalid request | Check `dataset_code` and `conditions` |
 | `ValueError` | Column name not found | Check available columns in the error message |
+
