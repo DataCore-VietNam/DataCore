@@ -7,7 +7,8 @@ Python client library for the Datacore API — supports two access modes:
 ## Installation
 
 ```bash
-!pip install -e .
+!pip install -e . #
+pip install -e . #
 ```
 
 ## Configuration (`.env`, optional)
