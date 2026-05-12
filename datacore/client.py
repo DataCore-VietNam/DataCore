@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 import json
-from pathlib import Path
 import time
 from functools import wraps
-from typing import Optional, Dict, Any, List, Iterator
+from pathlib import Path
+from typing import Any, Dict, Iterator, List, Optional
 
 import pandas as pd
 import requests
@@ -15,22 +15,18 @@ _env = dotenv_values()
 
 class DatacoreError(Exception):
     """Base exception for Datacore package."""
-    pass
 
 
-class AuthenticationError(DatacoreError):
+class AuthenticationError(DatoreError if False else DatacoreError):
     """Raised when API key is missing or invalid."""
-    pass
 
 
 class PermissionDeniedError(DatacoreError):
     """Raised when access is denied."""
-    pass
 
 
 class APIRequestError(DatacoreError):
     """Raised when request fails or response format is invalid."""
-    pass
 
 
 def retry_on_error(max_retries: int = 3, delay: float = 1.0):
@@ -46,50 +42,35 @@ def retry_on_error(max_retries: int = 3, delay: float = 1.0):
                     if attempt < max_retries - 1:
                         time.sleep(delay * (2 ** attempt))
             raise last_error
+
         return wrapper
+
     return decorator
 
 
 class Datacore:
-    """
-    Datacore API client.
+    """Datacore API client."""
 
-    Demo:
-        client = Datacore()
-        df = client.preview("vsic")
-
-    Paid:
-        client = Datacore(api_key="your-api-key")
-        raw = client.get_data("dataset_historical_price")
-        df = client.get_dataframe("dataset_historical_price")
-        info = client.get_data_info("dataset_historical_price")
-    """
-
-    GATEWAY_URL =  "https://gateway.datacore.vn"
+    GATEWAY_URL = "https://gateway.datacore.vn"
     SEARCH_URL = "https://gateway.datacore.vn/data/ds/search"
     PREVIEW_URL = "https://gateway.datacore.vn/data/ds/preview"
 
-    def __init__(self, api_key: Optional[str] = None, timeout: int = 30):
+    def __init__(self, api_key: Optional[str] = None, timeout: int = 30, debug: bool = False):
         self.timeout = timeout
+        self.debug = debug
         self.api_key = (api_key or _env.get("X_API_KEY") or "").strip()
 
         self.session = requests.Session()
-        self.session.headers.update({
-            "Content-Type": "application/json"
-        })
+        self.session.headers.update({"Content-Type": "application/json"})
 
         if self.api_key:
-            self.session.headers.update({
-                "x-api-key": self.api_key
-            })
+            self.session.headers.update({"x-api-key": self.api_key})
 
     def set_api_key(self, api_key: str) -> None:
         if not api_key or not api_key.strip():
             raise ValueError("API key cannot be empty.")
         self.api_key = api_key.strip()
-        self.session.headers.update({
-            "x-api-key": self.api_key
-        })
+        self.session.headers.update({"x-api-key": self.api_key})
 
     def is_authenticated(self) -> bool:
         return bool(self.api_key)
@@ -115,49 +96,35 @@ class Datacore:
             or f"HTTP {response.status_code}"
         )
 
+        full_message = f"HTTP {response.status_code}: {message}\nResponse: {response.text}"
+
         if response.status_code in (401, 403):
             lowered = str(message).lower()
             if any(word in lowered for word in ["permission", "forbidden", "denied", "not allowed"]):
-                raise PermissionDeniedError(message)
-            raise AuthenticationError(message)
+                raise PermissionDeniedError(full_message)
+            raise AuthenticationError(full_message)
 
-        raise APIRequestError(message)
+        raise APIRequestError(full_message)
 
     @staticmethod
     def _get_payload(data: Dict[str, Any], error_prefix: str = "response") -> Dict[str, Any]:
         if not isinstance(data, dict):
-            raise APIRequestError(
-                f"Cannot parse {error_prefix}: response is not a dict"
-            )
+            raise APIRequestError(f"Cannot parse {error_prefix}: response is not a dict")
 
         payload = data.get("data")
         if payload is None:
-            message = (
-                data.get("message")
-                or data.get("error")
-                or data.get("detail")
-                or "missing key 'data'"
-            )
-            raise APIRequestError(
-                f"Cannot parse {error_prefix}: {message}"
-            )
+            message = data.get("message") or data.get("error") or data.get("detail") or "missing key 'data'"
+            raise APIRequestError(f"Cannot parse {error_prefix}: {message}")
 
         if not isinstance(payload, dict):
-            raise APIRequestError(
-                f"Cannot parse {error_prefix}: key 'data' is not an object"
-            )
+            raise APIRequestError(f"Cannot parse {error_prefix}: key 'data' is not an object")
 
         return payload
 
     @staticmethod
     def _extract_metadata(data: Dict[str, Any], queried_rows: Optional[int] = None) -> Dict[str, Any]:
         if not isinstance(data, dict):
-            return {
-                "num": None,
-                "totalPage": None,
-                "currentPage": None,
-                "queried_rows": queried_rows,
-            }
+            return {"num": None, "totalPage": None, "currentPage": None, "queried_rows": queried_rows}
 
         payload = data.get("data", {})
         if not isinstance(payload, dict):
@@ -187,21 +154,14 @@ class Datacore:
         fields = payload.get("fields")
 
         if rows is None:
-            raise APIRequestError(
-                f"Cannot convert {error_prefix} to DataFrame: missing key 'dataDetail'"
-            )
-
+            raise APIRequestError(f"Cannot convert {error_prefix} to DataFrame: missing key 'dataDetail'")
         if fields is None:
-            raise APIRequestError(
-                f"Cannot convert {error_prefix} to DataFrame: missing key 'fields'"
-            )
+            raise APIRequestError(f"Cannot convert {error_prefix} to DataFrame: missing key 'fields'")
 
         try:
             return pd.DataFrame(rows, columns=fields)
         except Exception as exc:
-            raise APIRequestError(
-                f"Cannot convert {error_prefix} to DataFrame: {exc}"
-            ) from exc
+            raise APIRequestError(f"Cannot convert {error_prefix} to DataFrame: {exc}") from exc
 
     @staticmethod
     def _filter_dataframe_columns(df: pd.DataFrame, columns: List[str]) -> pd.DataFrame:
@@ -210,31 +170,18 @@ class Datacore:
 
         missing = [col for col in columns if col not in df.columns]
         if missing:
-            raise ValueError(
-                f"Columns not found: {missing}. Available columns: {list(df.columns)}"
-            )
+            raise ValueError(f"Columns not found: {missing}. Available columns: {list(df.columns)}")
 
         return df.loc[:, columns]
 
     @classmethod
-    def _build_dataframe_and_info(
-        cls,
-        raw_data: Dict[str, Any],
-        error_prefix: str = "API response",
-    ) -> tuple[pd.DataFrame, str]:
+    def _build_dataframe_and_info(cls, raw_data: Dict[str, Any], error_prefix: str = "API response") -> tuple[pd.DataFrame, str]:
         df = cls._to_dataframe(raw_data, error_prefix=error_prefix)
         meta = cls._extract_metadata(raw_data, queried_rows=len(df))
         return df, cls._metadata_to_string(meta)
 
     @retry_on_error(max_retries=3, delay=1.0)
     def preview_raw(self, dataset_code: str) -> Dict[str, Any]:
-        """
-        Demo mode — no API key required.
-        Requires DATACORE_PREVIEW to be set in .env.
-        """
-        if not self.PREVIEW_URL:
-            raise APIRequestError("DATACORE_PREVIEW is not configured in .env")
-
         response = requests.get(
             self.PREVIEW_URL,
             params={"dataSetCode": dataset_code},
@@ -246,11 +193,7 @@ class Datacore:
 
         return response.json()
 
-    def preview(
-        self,
-        dataset_code: str,
-        columns: Optional[List[str]] = None,
-    ) -> pd.DataFrame:
+    def preview(self, dataset_code: str, columns: Optional[List[str]] = None) -> pd.DataFrame:
         data = self.preview_raw(dataset_code)
         df = self._to_dataframe(data, error_prefix="preview response")
         if columns:
@@ -269,22 +212,38 @@ class Datacore:
     ) -> Dict[str, Any]:
         self._require_auth()
 
-        payload = {
+        if page < 1:
+            raise ValueError("page must be >= 1")
+
+        payload: Dict[str, Any] = {
             "dataSetCode": dataset_code,
-            "conditions": conditions or [],
-            "selectFields": select_fields or [],
             "page": page,
-            **kwargs,
         }
+
+        # Quan trọng: không gửi mảng rỗng nếu API không chấp nhận.
+        if conditions:
+            payload["conditions"] = conditions
+
+        if select_fields:
+            payload["selectFields"] = select_fields
 
         if limit is not None:
             payload["limit"] = limit
 
-        response = self.session.post(
-            self.SEARCH_URL,
-            json=payload,
-            timeout=self.timeout,
-        )
+        # Chỉ gửi kwargs có giá trị thật, tránh đẩy None/list rỗng lên API.
+        for key, value in kwargs.items():
+            if value is not None and value != [] and value != {}:
+                payload[key] = value
+
+        if self.debug:
+            print("REQUEST PAYLOAD:")
+            print(json.dumps(payload, indent=2, ensure_ascii=False))
+
+        response = self.session.post(self.SEARCH_URL, json=payload, timeout=self.timeout)
+
+        if self.debug:
+            print("STATUS:", response.status_code)
+            print("RESPONSE:", response.text[:2000])
 
         if not response.ok:
             self._raise_api_error(response)
@@ -303,18 +262,6 @@ class Datacore:
         include_info: bool = True,
         **kwargs: Any,
     ):
-        """
-        return_type:
-        - "dataframe": returns a pandas DataFrame (default)
-        - "json": returns a JSON string
-        - "dict": returns the raw response dict
-
-        include_info:
-        - True: returns dict {"data": result, "info": info_string} (default)
-        - False: returns the result directly according to return_type
-
-        columns: filter specific columns (only applies when return_type="dataframe")
-        """
         raw_data = self._request_data(
             dataset_code=dataset_code,
             conditions=conditions,
@@ -340,12 +287,30 @@ class Datacore:
             raise ValueError("return_type must be 'dataframe', 'json', or 'dict'")
 
         if include_info:
-            return {
-                "data": result,
-                "info": info,
-            }
+            return {"data": result, "info": info}
         return result
 
+    def get_dataframe(
+        self,
+        dataset_code: str,
+        conditions: Optional[List[Dict[str, Any]]] = None,
+        select_fields: Optional[List[str]] = None,
+        columns: Optional[List[str]] = None,
+        page: int = 1,
+        limit: Optional[int] = None,
+        **kwargs: Any,
+    ) -> pd.DataFrame:
+        return self.get_data(
+            dataset_code=dataset_code,
+            conditions=conditions,
+            select_fields=select_fields,
+            columns=columns,
+            page=page,
+            limit=limit,
+            return_type="dataframe",
+            include_info=False,
+            **kwargs,
+        )
 
     def get_data_info(
         self,
@@ -368,8 +333,6 @@ class Datacore:
         )
         return result["info"]
 
-   
-
     def download_data(
         self,
         dataset_code: str,
@@ -379,23 +342,19 @@ class Datacore:
         select_fields: Optional[List[str]] = None,
         start_page: int = 1,
         end_page: Optional[int] = None,
-        limit: int = 1000,
+        limit: Optional[int] = None,
         show_progress: bool = True,
         **kwargs: Any,
     ) -> Dict[str, Any]:
-        """
-        Download data to a file using the authenticated session.
-
-        file_format:
-        - "csv": saves a concatenated DataFrame to a CSV file
-        - "json": saves a list of raw API page responses as JSON
-        """
         normalized_format = file_format.lower().strip()
         if normalized_format not in {"csv", "json"}:
             raise ValueError("file_format must be 'csv' or 'json'")
 
         if start_page < 1:
             raise ValueError("start_page must be >= 1")
+
+        if end_page is not None and end_page < start_page:
+            raise ValueError("end_page must be >= start_page")
 
         path = Path(output_path)
         if path.parent and not path.parent.exists():
@@ -433,6 +392,9 @@ class Datacore:
 
             page_count += 1
 
+            payload = raw_data.get("data", {}) if isinstance(raw_data, dict) else {}
+            rows = payload.get("dataDetail", []) if isinstance(payload, dict) else []
+
             if normalized_format == "csv":
                 df, _ = self._build_dataframe_and_info(raw_data, error_prefix="API response")
                 if df.empty:
@@ -441,21 +403,22 @@ class Datacore:
                 total_rows += len(df)
             else:
                 raw_pages.append(raw_data)
-                payload = raw_data.get("data", {}) if isinstance(raw_data, dict) else {}
-                rows = payload.get("dataDetail", []) if isinstance(payload, dict) else []
                 if isinstance(rows, list):
                     total_rows += len(rows)
+                    if not rows:
+                        break
 
             if discovered_total_page is not None and page >= discovered_total_page:
+                break
+
+            # Nếu API không trả totalPage và trang hiện tại không có dữ liệu thì dừng.
+            if not rows:
                 break
 
             page += 1
 
         if normalized_format == "csv":
-            if dataframes:
-                final_df = pd.concat(dataframes, ignore_index=True)
-            else:
-                final_df = pd.DataFrame()
+            final_df = pd.concat(dataframes, ignore_index=True) if dataframes else pd.DataFrame()
             final_df.to_csv(path, index=False)
         else:
             with path.open("w", encoding="utf-8") as f:
@@ -479,10 +442,6 @@ class Datacore:
         select_fields: Optional[List[str]] = None,
         **kwargs: Any,
     ) -> Iterator[pd.DataFrame]:
-        """
-        Iterates over all pages of a dataset, yielding one DataFrame per page.
-        Requires API key.
-        """
         page = 1
         while True:
             if max_pages is not None and page > max_pages:
@@ -493,6 +452,7 @@ class Datacore:
                 conditions=conditions,
                 select_fields=select_fields,
                 page=page,
+                limit=limit,
                 **kwargs,
             )
 
