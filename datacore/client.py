@@ -17,7 +17,7 @@ class DatacoreError(Exception):
     """Base exception for Datacore package."""
 
 
-class AuthenticationError(DatoreError if False else DatacoreError):
+class AuthenticationError(DatacoreError):
     """Raised when API key is missing or invalid."""
 
 
@@ -166,7 +166,7 @@ class Datacore:
     @staticmethod
     def _filter_dataframe_columns(df: pd.DataFrame, columns: List[str]) -> pd.DataFrame:
         if not columns:
-            raise ValueError("columns cannot be empty")
+            return df
 
         missing = [col for col in columns if col not in df.columns]
         if missing:
