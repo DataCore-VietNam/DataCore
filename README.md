@@ -43,7 +43,7 @@ Preview data without an API key.
 ```python
 # All columns
 df = client.preview("dataset_historical_price")
-print(df.head())
+print(df)
 
 # Filter specific columns
 df = client.preview("dataset_historical_price", columns=["symbol", "date", "close_price"])
