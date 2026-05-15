@@ -27,12 +27,16 @@ jobs:
           pip install -e ".[dev]"
       - name: Lint
         run: ruff check datacore/
+      - name: Run test suite (offline assertions)
+        # Live paid-endpoint assertions are skipped here because they need a
+        # real X_API_KEY. The runner exercises every offline code path and
+        # exits non-zero on any failure. Run the full suite locally with
+        # X_API_KEY set -- see tests/README.md.
+        run: python tests/test_extensive.py
       - name: Build distributions
         run: python -m build
       - name: Verify distributions
         run: twine check dist/*
-      # Note: live API tests intentionally not run in CI -- they require a
-      # paid API key. Run them locally with X_API_KEY set in your environment.
 
   build:
     name: Build sdist + wheel
