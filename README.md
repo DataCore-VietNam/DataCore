@@ -28,10 +28,10 @@ DATACORE_GATEWAY_URL=https://gateway.datacore.vn
 from datacore import Datacore
 
 # Demo mode (no API key required)
-client = Datacore()
+client_demo = Datacore()
 
 # Paid mode
-client = Datacore(api_key="your-api-key")
+client_paid = Datacore(api_key="your-api-key")
 ```
 
 ---
@@ -42,11 +42,11 @@ Preview data without an API key.
 
 ```python
 # All columns
-df = client.preview("dataset_historical_price")
+df = client_demo.preview("dataset_historical_price")
 print(df)
 
 # Filter specific columns
-df = client.preview("dataset_historical_price", columns=["symbol", "date", "close_price"])
+df = client_demo.preview("dataset_historical_price", columns=["symbol", "date", "close_price"])
 print(df.head())
 ```
 
@@ -70,7 +70,7 @@ print(result["info"])
 Full parameters:
 
 ```python
-result = client.get_data(
+result = client_paid.get_data(
     dataset_code="dataset_historical_price",
     columns=["symbol", "date", "close_price"],  # filter columns (optional)
     conditions=[{"field": "symbol", "operator": "=", "value": "AAA"}],  # filter rows (optional)
@@ -89,7 +89,7 @@ result = client.get_data(
 
 ```python
 # Download all pages
-download_result = client.download_data(
+download_result = client_paid.download_data(
     dataset_code="dataset_historical_price",
     output_path="data.csv",
     file_format="csv",   # "csv" or "json"
@@ -101,7 +101,7 @@ print(download_result)
 # {"output_path": "data.csv", "pages_downloaded": 37607, "rows_downloaded": 3760607, ...}
 
 # Download only first 3 pages
-download_result = client.download_data(
+download_result = client_paid.download_data(
     dataset_code="dataset_historical_price",
     output_path="data_page1_3.csv",
     file_format="csv",
