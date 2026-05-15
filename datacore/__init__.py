@@ -7,7 +7,8 @@ from .client import (
 )
 
 __version__ = "0.2.0"
-__author__ = "Your Name"
+__author__ = "DataCore Vietnam"
+__email__ = "support@datacore.vn"
 
 __all__ = [
     "Datacore",

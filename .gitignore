@@ -20,12 +20,13 @@ env/
 env.bak/
 venv.bak/
 
-# Current misplaced venv inside package
+# Guard: never let an in-package venv slip back in.
 datacore/Include/
 datacore/Lib/
 datacore/Scripts/
 datacore/share/
 datacore/pyvenv.cfg
+datacore/bin/
 
 # Jupyter
 .ipynb_checkpoints/
@@ -52,6 +53,12 @@ htmlcov/
 
 # Local secrets
 .python-version
+
+# Internal-only docs — never commit. Maintainers keep a copy outside the repo.
+PUBLISHING.md
+**/PUBLISHING.md
+RELEASING.md
+**/RELEASING.md
 
 # Data files
 dataset_*.csv

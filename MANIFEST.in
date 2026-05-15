@@ -1,5 +1,11 @@
 include README.md
 include LICENSE
+include CHANGELOG.md
+include .env.example
+include pyproject.toml
 recursive-include datacore *.py
 recursive-include datacore *.typed
-recursive-include datacore *.json *.yaml *.yml *.txt
+
+# Maintainer-only docs (not shipped to PyPI users):
+exclude .github
+recursive-exclude .github *
