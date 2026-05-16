@@ -1,5 +1,10 @@
 # Datacore Python Client
 
+[![PyPI version](https://img.shields.io/pypi/v/datacore-vn.svg)](https://pypi.org/project/datacore-vn/)
+[![Python versions](https://img.shields.io/pypi/pyversions/datacore-vn.svg)](https://pypi.org/project/datacore-vn/)
+[![CI](https://github.com/DataCore-VietNam/DataCore/actions/workflows/ci.yml/badge.svg)](https://github.com/DataCore-VietNam/DataCore/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/pypi/l/datacore-vn.svg)](https://github.com/DataCore-VietNam/DataCore/blob/main/LICENSE)
+
 Python client library for the Datacore API — supports two access modes:
 
 - **Demo**: Preview datasets without an API key

@@ -12,6 +12,14 @@ import tempfile
 import traceback
 from pathlib import Path
 
+# Force UTF-8 stdout/stderr so Vietnamese text in API responses or source
+# comments cannot raise UnicodeEncodeError on Windows (default cp1252).
+for _stream in (sys.stdout, sys.stderr):
+    try:
+        _stream.reconfigure(encoding="utf-8")
+    except (AttributeError, ValueError):
+        pass
+
 PASS = []
 FAIL = []
 SKIP = []
@@ -84,7 +92,7 @@ for cls in (AuthenticationError, PermissionDeniedError, APIRequestError):
 
 # Critical: AuthenticationError must NOT contain DatoreError typo workaround
 import datacore.client as _client
-src = Path(_client.__file__).read_text()
+src = Path(_client.__file__).read_text(encoding="utf-8")
 check("DatoreError typo workaround removed", "DatoreError" not in src)
 
 # -----------------------------------------------------------------------------
