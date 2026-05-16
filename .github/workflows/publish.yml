@@ -9,6 +9,11 @@ on:
     tags:
       - "v*"
 
+# Least-privilege default. Jobs that need more (OIDC publishing to
+# PyPI, creating a GitHub Release) escalate in their own permissions block.
+permissions:
+  contents: read
+
 jobs:
   build:
     name: Build sdist + wheel
