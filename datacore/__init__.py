@@ -6,7 +6,7 @@ from .client import (
     APIRequestError,
 )
 
-__version__ = "0.2.0"
+__version__ = "1.0.0"
 __author__ = "DataCore Vietnam"
 __email__ = "support@datacore.vn"
 

@@ -406,11 +406,22 @@ class Datacore:
         **kwargs: Any,
     ):
         """
+        Fetch a page of data from a dataset.
+
         return_type:
         - "dataframe" (default) -> pandas.DataFrame
-        - "polars"              -> polars.DataFrame (requires `pip install "datacore[polars]"`)
+        - "polars"              -> polars.DataFrame (requires `pip install "datacore-vn[polars]"`)
         - "json"                -> JSON string
         - "dict"                -> raw response dict
+
+        conditions:
+            **Experimental.** Server-side row filter, forwarded to the
+            gateway verbatim. The accepted JSON shape is defined by the
+            gateway and is not yet finalised -- the shapes tried so far are
+            rejected with HTTP 400 by `gateway.datacore.vn`. Until the
+            schema is confirmed, prefer fetching unfiltered data and
+            filtering the returned DataFrame client-side. This parameter
+            may change in a future release.
         """
         valid = {"dataframe", "polars", "json", "dict"}
         if return_type not in valid:

@@ -3,15 +3,35 @@
 All notable changes to `datacore` are recorded here. This project follows
 [Semantic Versioning](https://semver.org/) (MAJOR.MINOR.PATCH).
 
+## [1.0.0] - 2026-05-15
+
+First official **stable** release. The public API is now considered
+stable: methods and their signatures will not change incompatibly
+without a major version bump.
+
+> **Distribution name**: published on PyPI as `datacore-vn`; imported as
+> `import datacore`. (The bare `datacore` name is held by an unrelated
+> abandoned 2022 project.)
+
+### Changed
+- Promoted to `Development Status :: 5 - Production/Stable` and version
+  `1.0.0`, reflecting a stable, committed public API. No code behaviour
+  changed from `0.2.0`.
+
+### Notes
+- The `conditions` server-side row filter is marked **experimental**:
+  the gateway's accepted JSON schema is not yet finalised, so the
+  parameter is documented as not production-ready and may change. All
+  other methods are stable.
+
 ## [0.2.0] - 2026-05-14
 
-First publicly stable release.
+Initial public release.
 
 > **Distribution name**: the package is published on PyPI as
 > `datacore-vn` because the shorter `datacore` slot is held by an
 > unrelated 2022 abandoned project (single release, no description).
-> The import name is unchanged: `import datacore`. A PEP 541 request
-> to reclaim the canonical `datacore` name is in flight.
+> The import name is unchanged: `import datacore`.
 
 ### Added
 - **Polars support** as an optional dependency. Install with
@@ -72,4 +92,5 @@ First publicly stable release.
   scrubbed from the git history with `git filter-repo`. The credential
   has been rotated server-side and is no longer valid.
 
+[1.0.0]: https://github.com/DataCore-VietNam/DataCore/releases/tag/v1.0.0
 [0.2.0]: https://github.com/DataCore-VietNam/DataCore/releases/tag/v0.2.0

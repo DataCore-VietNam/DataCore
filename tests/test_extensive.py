@@ -77,7 +77,13 @@ from datacore import (
 )
 print(f"  version = {datacore.__version__}")
 print(f"  author  = {datacore.__author__}")
-check("version is 0.2.0", datacore.__version__ == "0.2.0")
+check(
+    "version is a valid X.Y.Z string",
+    isinstance(datacore.__version__, str)
+    and len(datacore.__version__.split(".")) == 3
+    and all(p.isdigit() for p in datacore.__version__.split(".")),
+    f"__version__={datacore.__version__!r}",
+)
 check("author no longer placeholder", datacore.__author__ != "Your Name")
 check("all expected exceptions exported", set(datacore.__all__) >= {
     "Datacore", "DatacoreError", "AuthenticationError",

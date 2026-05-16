@@ -12,8 +12,8 @@ Python client library for the Datacore API — supports two access modes:
 
 > **Distribution name vs. import name**: install as `datacore-vn`, import as
 > `datacore`. (Same pattern as `pip install scikit-learn` → `import sklearn`.)
-> The shorter `datacore` distribution name on PyPI is a 2022 abandoned
-> project unrelated to us; we have a request open to reclaim it.
+> The shorter `datacore` distribution name on PyPI belongs to an unrelated
+> abandoned 2022 project; `datacore-vn` is our permanent distribution name.
 
 ## Installation
 
@@ -121,7 +121,7 @@ Full parameters:
 result = client.get_data(
     dataset_code="dataset_historical_price",
     columns=["symbol", "date", "close_price"],   # client-side column filter (optional)
-    conditions=None,         # server-side row filter -- see note below (optional)
+    conditions=None,         # EXPERIMENTAL server-side row filter -- see note below
     select_fields=None,      # server-side field selection (optional)
     page=1,
     limit=100,               # max 100 server-side (HTTP 400 if higher)
@@ -134,13 +134,13 @@ result = client.get_data(
 > request. Passing a larger value returns `HTTP 400: Invalid request content`.
 > For larger downloads, paginate with `download_data` or `paginate`.
 
-> **`conditions` format**: the server-side `conditions` filter is forwarded
-> to the gateway verbatim. The exact accepted JSON shape is defined by the
-> gateway, not by this client; the shape that worked in earlier internal
-> examples is **not** currently accepted by `gateway.datacore.vn/data/ds/search`.
-> Contact the Datacore backend team for the documented filter schema before
-> relying on `conditions` in production. As a workaround you can fetch
-> unfiltered data and filter client-side on the returned DataFrame.
+> ⚠️ **`conditions` is experimental.** The server-side `conditions` row
+> filter is forwarded to the gateway verbatim, but the accepted JSON shape
+> is not yet finalised — every shape tried so far is rejected by
+> `gateway.datacore.vn/data/ds/search` with `HTTP 400`. **Do not rely on
+> `conditions` in production yet.** Until the gateway schema is confirmed,
+> fetch unfiltered data and filter the returned DataFrame client-side. This
+> parameter may change in a future release.
 
 A convenience wrapper that returns the DataFrame directly (no info dict):
 
